@@ -1,0 +1,470 @@
+<!DOCTYPE html>
+<html lang="pt">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+    <meta name="apple-mobile-web-app-capable" content="yes">
+    <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
+    <meta name="apple-mobile-web-app-title" content="Festa do Viso">
+    <meta name="theme-color" content="#2196F3">
+    <title>Festa do Viso - Sorteio</title>
+    <link rel="manifest" href="manifest.json">
+    <link rel="apple-touch-icon" href="icon-192.png">
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
+            background: #f5f5f5;
+            -webkit-user-select: none;
+            user-select: none;
+            overflow-x: hidden;
+        }
+
+        .container {
+            max-width: 600px;
+            margin: 0 auto;
+            padding-bottom: 70px;
+        }
+
+        /* Bottom Navigation */
+        .bottom-nav {
+            position: fixed;
+            bottom: 0;
+            left: 0;
+            right: 0;
+            background: white;
+            box-shadow: 0 -2px 10px rgba(0,0,0,0.1);
+            display: flex;
+            justify-content: space-around;
+            padding: 10px 0;
+            z-index: 100;
+        }
+
+        .nav-item {
+            flex: 1;
+            text-align: center;
+            padding: 5px;
+            cursor: pointer;
+            border: none;
+            background: none;
+            color: #666;
+            font-size: 12px;
+        }
+
+        .nav-item.active {
+            color: #2196F3;
+        }
+
+        .nav-icon {
+            font-size: 24px;
+            display: block;
+            margin-bottom: 4px;
+        }
+
+        /* Screens */
+        .screen {
+            display: none;
+            padding: 16px;
+        }
+
+        .screen.active {
+            display: block;
+        }
+
+        /* Header */
+        .header {
+            background: #2196F3;
+            color: white;
+            padding: 20px 16px;
+            margin: -16px -16px 16px -16px;
+        }
+
+        .header h1 {
+            font-size: 24px;
+            font-weight: 600;
+        }
+
+        /* Folha Selector */
+        .folha-selector {
+            background: white;
+            padding: 16px;
+            border-radius: 8px;
+            margin-bottom: 16px;
+            box-shadow: 0 2px 4px rgba(0,0,0,0.1);
+        }
+
+        .folha-selector label {
+            display: block;
+            margin-bottom: 8px;
+            font-weight: 600;
+            color: #333;
+        }
+
+        .folha-selector select {
+            width: 100%;
+            padding: 12px;
+            border: 1px solid #ddd;
+            border-radius: 8px;
+            font-size: 16px;
+        }
+
+        /* Stats */
+        .stats {
+            display: flex;
+            gap: 8px;
+            margin-bottom: 16px;
+        }
+
+        .stat-card {
+            flex: 1;
+            background: white;
+            padding: 12px;
+            border-radius: 8px;
+            text-align: center;
+            box-shadow: 0 2px 4px rgba(0,0,0,0.1);
+        }
+
+        .stat-card .value {
+            font-size: 24px;
+            font-weight: bold;
+            color: #4CAF50;
+        }
+
+        .stat-card .label {
+            font-size: 12px;
+            color: #666;
+            margin-top: 4px;
+        }
+
+        /* Number Grid */
+        .number-grid {
+            display: grid;
+            grid-template-columns: repeat(7, 1fr);
+            gap: 8px;
+            background: white;
+            padding: 16px;
+            border-radius: 8px;
+            box-shadow: 0 2px 4px rgba(0,0,0,0.1);
+        }
+
+        .number-btn {
+            aspect-ratio: 1;
+            border: none;
+            border-radius: 8px;
+            font-size: 16px;
+            font-weight: bold;
+            cursor: pointer;
+            transition: all 0.2s;
+        }
+
+        .number-btn.disponivel {
+            background: #2196F3;
+            color: white;
+        }
+
+        .number-btn.ocupado {
+            background: #9E9E9E;
+            color: rgba(255,255,255,0.6);
+            cursor: not-allowed;
+        }
+
+        .number-btn.disponivel:active {
+            transform: scale(0.95);
+        }
+
+        /* Dialog */
+        .dialog-overlay {
+            display: none;
+            position: fixed;
+            top: 0;
+            left: 0;
+            right: 0;
+            bottom: 0;
+            background: rgba(0,0,0,0.5);
+            z-index: 1000;
+            align-items: center;
+            justify-content: center;
+        }
+
+        .dialog-overlay.show {
+            display: flex;
+        }
+
+        .dialog {
+            background: white;
+            border-radius: 12px;
+            padding: 24px;
+            width: 90%;
+            max-width: 400px;
+        }
+
+        .dialog h2 {
+            margin-bottom: 16px;
+            color: #333;
+        }
+
+        .dialog input {
+            width: 100%;
+            padding: 12px;
+            margin-bottom: 12px;
+            border: 1px solid #ddd;
+            border-radius: 8px;
+            font-size: 16px;
+        }
+
+        .dialog-buttons {
+            display: flex;
+            gap: 8px;
+            margin-top: 16px;
+        }
+
+        .dialog-buttons button {
+            flex: 1;
+            padding: 12px;
+            border: none;
+            border-radius: 8px;
+            font-size: 16px;
+            font-weight: 600;
+            cursor: pointer;
+        }
+
+        .btn-cancel {
+            background: #f5f5f5;
+            color: #666;
+        }
+
+        .btn-confirm {
+            background: #4CAF50;
+            color: white;
+        }
+
+        /* Vencedores List */
+        .vencedor-card {
+            background: white;
+            padding: 16px;
+            border-radius: 8px;
+            margin-bottom: 12px;
+            box-shadow: 0 2px 4px rgba(0,0,0,0.1);
+        }
+
+        .vencedor-card .numero {
+            font-size: 32px;
+            font-weight: bold;
+            color: #4CAF50;
+            text-align: center;
+            margin-bottom: 8px;
+        }
+
+        .vencedor-card .info {
+            font-size: 14px;
+            color: #666;
+            margin: 4px 0;
+        }
+
+        .vencedor-card .nome {
+            font-size: 18px;
+            font-weight: 600;
+            color: #333;
+            margin: 8px 0;
+        }
+
+        .empty-state {
+            text-align: center;
+            padding: 40px;
+            color: #999;
+        }
+
+        /* Admin */
+        .admin-card {
+            background: white;
+            padding: 16px;
+            border-radius: 8px;
+            margin-bottom: 12px;
+            box-shadow: 0 2px 4px rgba(0,0,0,0.1);
+        }
+
+        .admin-card h3 {
+            margin-bottom: 12px;
+            color: #333;
+        }
+
+        .btn-primary {
+            width: 100%;
+            padding: 12px;
+            background: #2196F3;
+            color: white;
+            border: none;
+            border-radius: 8px;
+            font-size: 16px;
+            font-weight: 600;
+            cursor: pointer;
+            margin-bottom: 8px;
+        }
+
+        .btn-danger {
+            background: #f44336;
+        }
+
+        .btn-success {
+            background: #4CAF50;
+        }
+
+        .folha-item {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            padding: 12px;
+            border-bottom: 1px solid #eee;
+        }
+
+        .folha-item:last-child {
+            border-bottom: none;
+        }
+
+        .folha-actions {
+            display: flex;
+            gap: 8px;
+        }
+
+        .btn-small {
+            padding: 6px 12px;
+            border: none;
+            border-radius: 4px;
+            font-size: 12px;
+            cursor: pointer;
+        }
+
+        .stats-grid {
+            display: grid;
+            grid-template-columns: repeat(3, 1fr);
+            gap: 12px;
+            margin-bottom: 16px;
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <!-- Sorteio Screen -->
+        <div id="screen-sorteio" class="screen active">
+            <div class="header">
+                <h1>🎲 Festa do Viso</h1>
+            </div>
+
+            <div class="folha-selector">
+                <label>Folha Ativa:</label>
+                <select id="folha-select"></select>
+            </div>
+
+            <div class="stats">
+                <div class="stat-card">
+                    <div class="value" id="stat-disponiveis">49</div>
+                    <div class="label">Disponíveis</div>
+                </div>
+                <div class="stat-card">
+                    <div class="value" id="stat-vendidos">0</div>
+                    <div class="label">Vendidos</div>
+                </div>
+            </div>
+
+            <div class="number-grid" id="number-grid"></div>
+        </div>
+
+        <!-- Vencedores Screen -->
+        <div id="screen-vencedores" class="screen">
+            <div class="header">
+                <h1>🏆 Vencedores</h1>
+            </div>
+            <div id="vencedores-list"></div>
+        </div>
+
+        <!-- Admin Screen -->
+        <div id="screen-admin" class="screen">
+            <div class="header">
+                <h1>⚙️ Administração</h1>
+            </div>
+            <div id="admin-content"></div>
+        </div>
+    </div>
+
+    <!-- Bottom Navigation -->
+    <div class="bottom-nav">
+        <button class="nav-item active" onclick="showScreen('sorteio')">
+            <span class="nav-icon">🎲</span>
+            Sorteio
+        </button>
+        <button class="nav-item" onclick="showScreen('vencedores')">
+            <span class="nav-icon">🏆</span>
+            Vencedores
+        </button>
+        <button class="nav-item" onclick="showScreen('admin')">
+            <span class="nav-icon">⚙️</span>
+            Admin
+        </button>
+    </div>
+
+    <!-- Registo Dialog -->
+    <div class="dialog-overlay" id="dialog-registo">
+        <div class="dialog">
+            <h2>Registar Número <span id="dialog-numero"></span></h2>
+            <input type="text" id="input-nome" placeholder="Nome Completo" />
+            <input type="tel" id="input-contacto" placeholder="Contacto (9 dígitos)" maxlength="9" />
+            <div class="dialog-buttons">
+                <button class="btn-cancel" onclick="closeDialog()">Cancelar</button>
+                <button class="btn-confirm" onclick="registarNumero()">Registar</button>
+            </div>
+        </div>
+    </div>
+
+    <!-- Admin Login Dialog -->
+    <div class="dialog-overlay" id="dialog-login">
+        <div class="dialog">
+            <h2>Login Admin</h2>
+            <input type="text" id="input-username" placeholder="Username" value="admin" />
+            <input type="password" id="input-password" placeholder="Password" />
+            <div class="dialog-buttons">
+                <button class="btn-cancel" onclick="closeLoginDialog()">Cancelar</button>
+                <button class="btn-confirm" onclick="loginAdmin()">Entrar</button>
+            </div>
+        </div>
+    </div>
+
+    <!-- Create Folha Dialog -->
+    <div class="dialog-overlay" id="dialog-criar-folha">
+        <div class="dialog">
+            <h2>Criar Nova Folha</h2>
+            <input type="text" id="input-folha-nome" placeholder="Nome da Folha" />
+            <div class="dialog-buttons">
+                <button class="btn-cancel" onclick="closeCriarFolhaDialog()">Cancelar</button>
+                <button class="btn-confirm" onclick="criarFolha()">Criar</button>
+            </div>
+        </div>
+    </div>
+
+    <!-- Registar Vencedor Dialog -->
+    <div class="dialog-overlay" id="dialog-vencedor">
+        <div class="dialog">
+            <h2>Registar Vencedor</h2>
+            <select id="input-vencedor-folha" style="width: 100%; padding: 12px; margin-bottom: 12px; border: 1px solid #ddd; border-radius: 8px;"></select>
+            <input type="date" id="input-vencedor-data" style="width: 100%; padding: 12px; margin-bottom: 12px; border: 1px solid #ddd; border-radius: 8px;" />
+            <input type="number" id="input-vencedor-numero" placeholder="Número Vencedor (1-49)" min="1" max="49" />
+            <div class="dialog-buttons">
+                <button class="btn-cancel" onclick="closeVencedorDialog()">Cancelar</button>
+                <button class="btn-confirm" onclick="registarVencedor()">Registar</button>
+            </div>
+        </div>
+    </div>
+
+    <script src="app.js"></script>
+    <script>
+        // Register service worker
+        if ('serviceWorker' in navigator) {
+            navigator.serviceWorker.register('sw.js');
+        }
+    </script>
+</body>
+</html>
