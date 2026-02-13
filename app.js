@@ -172,29 +172,79 @@ function showScreen(screenName) {
     }
 }
 
-// Sorteio Screen
+// Helper: Get current week name
+function getCurrentWeekName() {
+    const now = new Date();
+    const start = new Date(now.getFullYear(), 0, 1);
+    const diff = now - start;
+    const oneWeek = 1000 * 60 * 60 * 24 * 7;
+    const weekNumber = Math.ceil(diff / oneWeek);
+    return `Semana ${weekNumber}`;
+}
+
+// Sorteio Screen with swipe between folhas
 function loadSorteio() {
     const folhas = dataManager.getFolhasAtivas();
-    const select = document.getElementById('folha-select');
 
-    select.innerHTML = '';
-    folhas.forEach(folha => {
-        const option = document.createElement('option');
-        option.value = folha.id;
-        option.textContent = folha.nome;
-        select.appendChild(option);
-    });
+    if (folhas.length === 0) {
+        document.getElementById('number-grid').innerHTML = '<div style="text-align: center; color: #999;">Não existem folhas ativas</div>';
+        return;
+    }
 
-    if (folhas.length > 0) {
-        selectedFolhaId = folhas[0].id;
-        select.value = selectedFolhaId;
+    // Auto-select current week or first
+    const currentWeekName = getCurrentWeekName();
+    const currentWeekFolha = folhas.find(f => f.nome === currentWeekName);
+    const initialIndex = currentWeekFolha ? folhas.indexOf(currentWeekFolha) : 0;
+
+    let currentFolhaIndex = initialIndex;
+    selectedFolhaId = folhas[currentFolhaIndex].id;
+
+    function displayCurrentFolha() {
+        const folha = folhas[currentFolhaIndex];
+        selectedFolhaId = folha.id;
+
+        // Update folha name display
+        document.getElementById('folha-name').textContent = folha.nome;
+        document.getElementById('folha-indicator').textContent = currentFolhaIndex === initialIndex ?
+            `${folha.nome} (Semana Atual)` : folha.nome;
+
         loadNumeros();
     }
 
-    select.addEventListener('change', (e) => {
-        selectedFolhaId = parseInt(e.target.value);
-        loadNumeros();
-    });
+    displayCurrentFolha();
+
+    // Remove old swipe listeners
+    const container = document.getElementById('screens-container');
+    const oldContainer = container.cloneNode(true);
+    container.parentNode.replaceChild(oldContainer, container);
+
+    // Add swipe for folhas only in sorteio screen
+    if (currentScreen === 'sorteio' && folhas.length > 1) {
+        let touchStartX = 0;
+        let touchEndX = 0;
+
+        oldContainer.addEventListener('touchstart', (e) => {
+            touchStartX = e.changedTouches[0].screenX;
+        }, { passive: true });
+
+        oldContainer.addEventListener('touchend', (e) => {
+            touchEndX = e.changedTouches[0].screenX;
+            const diff = touchStartX - touchEndX;
+            const threshold = 50;
+
+            if (Math.abs(diff) > threshold) {
+                if (diff > 0 && currentFolhaIndex < folhas.length - 1) {
+                    // Swipe left - next folha
+                    currentFolhaIndex++;
+                    displayCurrentFolha();
+                } else if (diff < 0 && currentFolhaIndex > 0) {
+                    // Swipe right - previous folha
+                    currentFolhaIndex--;
+                    displayCurrentFolha();
+                }
+            }
+        }, { passive: true });
+    }
 }
 
 function loadNumeros() {
@@ -470,46 +520,7 @@ function registarVencedor() {
     }
 }
 
-// Swipe functionality
-let touchStartX = 0;
-let touchEndX = 0;
-
-function handleSwipe() {
-    const threshold = 50; // minimum distance for swipe
-    const diff = touchStartX - touchEndX;
-
-    if (Math.abs(diff) > threshold) {
-        if (diff > 0) {
-            // Swiped left - go to next screen
-            const screens = ['sorteio', 'vencedores', 'admin'];
-            const currentIndex = screens.indexOf(currentScreen);
-            if (currentIndex < screens.length - 1) {
-                showScreen(screens[currentIndex + 1]);
-            }
-        } else {
-            // Swiped right - go to previous screen
-            const screens = ['sorteio', 'vencedores', 'admin'];
-            const currentIndex = screens.indexOf(currentScreen);
-            if (currentIndex > 0) {
-                showScreen(screens[currentIndex - 1]);
-            }
-        }
-    }
-}
-
 // Initialize
 document.addEventListener('DOMContentLoaded', () => {
     loadSorteio();
-
-    // Add swipe listeners
-    const container = document.getElementById('screens-container');
-
-    container.addEventListener('touchstart', (e) => {
-        touchStartX = e.changedTouches[0].screenX;
-    }, { passive: true });
-
-    container.addEventListener('touchend', (e) => {
-        touchEndX = e.changedTouches[0].screenX;
-        handleSwipe();
-    }, { passive: true });
 });
