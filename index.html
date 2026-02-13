@@ -67,13 +67,38 @@
         }
 
         /* Screens */
+        .screens-container {
+            position: relative;
+            overflow: hidden;
+            touch-action: pan-y;
+        }
+
         .screen {
             display: none;
             padding: 16px;
+            transition: transform 0.3s ease-out;
         }
 
         .screen.active {
             display: block;
+        }
+
+        .screen.swipe-left {
+            animation: slideOutLeft 0.3s ease-out;
+        }
+
+        .screen.swipe-right {
+            animation: slideOutRight 0.3s ease-out;
+        }
+
+        @keyframes slideOutLeft {
+            from { transform: translateX(0); }
+            to { transform: translateX(-100%); }
+        }
+
+        @keyframes slideOutRight {
+            from { transform: translateX(0); }
+            to { transform: translateX(100%); }
         }
 
         /* Header */
@@ -348,7 +373,7 @@
     </style>
 </head>
 <body>
-    <div class="container">
+    <div class="container screens-container" id="screens-container">
         <!-- Sorteio Screen -->
         <div id="screen-sorteio" class="screen active">
             <div class="header">
@@ -362,7 +387,7 @@
 
             <div class="stats">
                 <div class="stat-card">
-                    <div class="value" id="stat-disponiveis">49</div>
+                    <div class="value" id="stat-disponiveis">50</div>
                     <div class="label">Disponíveis</div>
                 </div>
                 <div class="stat-card">
@@ -451,7 +476,7 @@
             <h2>Registar Vencedor</h2>
             <select id="input-vencedor-folha" style="width: 100%; padding: 12px; margin-bottom: 12px; border: 1px solid #ddd; border-radius: 8px;"></select>
             <input type="date" id="input-vencedor-data" style="width: 100%; padding: 12px; margin-bottom: 12px; border: 1px solid #ddd; border-radius: 8px;" />
-            <input type="number" id="input-vencedor-numero" placeholder="Número Vencedor (1-49)" min="1" max="49" />
+            <input type="number" id="input-vencedor-numero" placeholder="Número Vencedor (1-50)" min="1" max="50" />
             <div class="dialog-buttons">
                 <button class="btn-cancel" onclick="closeVencedorDialog()">Cancelar</button>
                 <button class="btn-confirm" onclick="registarVencedor()">Registar</button>

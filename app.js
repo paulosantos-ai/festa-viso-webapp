@@ -151,12 +151,15 @@ function showScreen(screenName) {
         screen.classList.remove('active');
     });
 
-    navItems.forEach(item => {
+    navItems.forEach((item, index) => {
         item.classList.remove('active');
+        const screenNames = ['sorteio', 'vencedores', 'admin'];
+        if (screenNames[index] === screenName) {
+            item.classList.add('active');
+        }
     });
 
     document.getElementById('screen-' + screenName).classList.add('active');
-    event.currentTarget.classList.add('active');
 
     currentScreen = screenName;
 
@@ -201,12 +204,12 @@ function loadNumeros() {
     const grid = document.getElementById('number-grid');
 
     // Update stats
-    document.getElementById('stat-disponiveis').textContent = 49 - numerosOcupados.length;
+    document.getElementById('stat-disponiveis').textContent = 50 - numerosOcupados.length;
     document.getElementById('stat-vendidos').textContent = numerosOcupados.length;
 
     // Create grid
     grid.innerHTML = '';
-    for (let i = 1; i <= 49; i++) {
+    for (let i = 1; i <= 50; i++) {
         const button = document.createElement('button');
         button.className = numerosOcupados.includes(i) ? 'number-btn ocupado' : 'number-btn disponivel';
         button.textContent = i;
@@ -343,7 +346,7 @@ function loadFolhasList() {
         item.innerHTML = `
             <div>
                 <strong>${folha.nome}</strong><br>
-                <small>${registos}/49 vendidos - ${folha.ativa ? '✅ Ativa' : '❌ Inativa'}</small>
+                <small>${registos}/50 vendidos - ${folha.ativa ? '✅ Ativa' : '❌ Inativa'}</small>
             </div>
             <div class="folha-actions">
                 <button class="btn-small" onclick="toggleFolha(${folha.id})" style="background: ${folha.ativa ? '#FFC107' : '#4CAF50'}; color: white;">
@@ -451,8 +454,8 @@ function registarVencedor() {
     const data = new Date(document.getElementById('input-vencedor-data').value).getTime();
     const numero = parseInt(document.getElementById('input-vencedor-numero').value);
 
-    if (!numero || numero < 1 || numero > 49) {
-        alert('Número deve ser entre 1 e 49');
+    if (!numero || numero < 1 || numero > 50) {
+        alert('Número deve ser entre 1 e 50');
         return;
     }
 
@@ -467,7 +470,46 @@ function registarVencedor() {
     }
 }
 
+// Swipe functionality
+let touchStartX = 0;
+let touchEndX = 0;
+
+function handleSwipe() {
+    const threshold = 50; // minimum distance for swipe
+    const diff = touchStartX - touchEndX;
+
+    if (Math.abs(diff) > threshold) {
+        if (diff > 0) {
+            // Swiped left - go to next screen
+            const screens = ['sorteio', 'vencedores', 'admin'];
+            const currentIndex = screens.indexOf(currentScreen);
+            if (currentIndex < screens.length - 1) {
+                showScreen(screens[currentIndex + 1]);
+            }
+        } else {
+            // Swiped right - go to previous screen
+            const screens = ['sorteio', 'vencedores', 'admin'];
+            const currentIndex = screens.indexOf(currentScreen);
+            if (currentIndex > 0) {
+                showScreen(screens[currentIndex - 1]);
+            }
+        }
+    }
+}
+
 // Initialize
 document.addEventListener('DOMContentLoaded', () => {
     loadSorteio();
+
+    // Add swipe listeners
+    const container = document.getElementById('screens-container');
+
+    container.addEventListener('touchstart', (e) => {
+        touchStartX = e.changedTouches[0].screenX;
+    }, { passive: true });
+
+    container.addEventListener('touchend', (e) => {
+        touchEndX = e.changedTouches[0].screenX;
+        handleSwipe();
+    }, { passive: true });
 });
